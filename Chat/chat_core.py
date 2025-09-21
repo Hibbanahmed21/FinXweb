@@ -4,13 +4,14 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # project root
+BASE_DIR = os.path.dirname(__file__)  # Chat folder
 
-with open(os.path.join(BASE_DIR, "Chat", "system_prompt.txt"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "system_prompt.txt"), "r", encoding="utf-8") as f:
     SYSTEM_PROMPT = f.read()
 
-with open(os.path.join(BASE_DIR, "Chat", "intake_schema.json"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "intake_schema.json"), "r", encoding="utf-8") as f:
     INTAKE_SCHEMA = json.load(f)
+
 
 # ---- Model Loader ----
 def load_model(model_name="microsoft/phi-3-mini-4k-instruct"):
