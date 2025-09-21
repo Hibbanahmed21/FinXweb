@@ -6,11 +6,12 @@ import os
 
 BASE_DIR = os.path.dirname(__file__)  # Chat folder
 
-with open(os.path.join(BASE_DIR, "system_prompt.txt"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "config", "system_prompt.txt"), "r", encoding="utf-8") as f:
     SYSTEM_PROMPT = f.read()
 
-with open(os.path.join(BASE_DIR, "intake_schema.json"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "config", "intake_schema.json"), "r", encoding="utf-8") as f:
     INTAKE_SCHEMA = json.load(f)
+
 
 
 # ---- Model Loader ----
