@@ -2,13 +2,14 @@ from typing import List, Dict
 import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+import os
 
-# Load system prompt
-with open("Chat/system_prompt.txt", "r", encoding="utf-8") as f:
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # project root
+
+with open(os.path.join(BASE_DIR, "Chat", "system_prompt.txt"), "r", encoding="utf-8") as f:
     SYSTEM_PROMPT = f.read()
 
-# Load intake schema
-with open("Chat/intake_schema.json", "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "Chat", "intake_schema.json"), "r", encoding="utf-8") as f:
     INTAKE_SCHEMA = json.load(f)
 
 # ---- Model Loader ----
