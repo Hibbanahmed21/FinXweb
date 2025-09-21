@@ -1,0 +1,21 @@
+{
+    "required_fields": [
+      "age",
+      "monthly_income",
+      "fixed_expenses",
+      "goals",
+      "time_horizon",
+      "risk_tolerance",
+      "existing_debt",
+      "tax_regime",
+      "emergency_fund_status",
+      "dependents"
+    ],
+    "optional_fields": [
+      "city_state",
+      "insurance_status",
+      "investment_accounts",
+      "credit_score_estimate"
+    ]
+  }
+  
