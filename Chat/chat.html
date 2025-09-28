@@ -5,303 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FRIDAY Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: #F6F1FF;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .header {
-            background-color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header h1 {
-            color: #7E57C2;
-            font-weight: 700;
-            font-size: 2rem;
-            text-align: center;
-        }
-
-        /* Chat Container */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 0 1rem;
-        }
-
-        /* Messages Area */
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 0;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        /* Message Styles */
-        .message {
-            display: flex;
-            align-items: flex-end;
-            gap: 0.5rem;
-            max-width: 70%;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .message.bot {
-            align-self: flex-start;
-        }
-
-        /* Avatar Styles */
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .avatar.user {
-            background-color: #E6DAFF;
-            color: #2E2457;
-        }
-
-        .avatar.bot {
-            background-color: #7E57C2;
-            color: white;
-        }
-
-        /* Bubble Styles */
-        .bubble {
-            padding: 0.75rem 1rem;
-            border-radius: 18px;
-            word-wrap: break-word;
-            position: relative;
-            max-width: 100%;
-        }
-
-        .bubble.user {
-            background-color: #E6DAFF;
-            color: #2E2457;
-            border-bottom-right-radius: 4px;
-        }
-
-        .bubble.bot {
-            background-color: #7E57C2;
-            color: white;
-            border-bottom-left-radius: 4px;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: none;
-            align-items: flex-end;
-            gap: 0.5rem;
-            max-width: 70%;
-            align-self: flex-start;
-        }
-
-        .typing-indicator.show {
-            display: flex;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-            padding: 0.75rem 1rem;
-            background-color: #7E57C2;
-            border-radius: 18px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background-color: white;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        /* Input Area */
-        .input-area {
-            display: flex;
-            gap: 0.5rem;
-            padding: 1rem 0;
-            background-color: #F6F1FF;
-            position: sticky;
-            bottom: 0;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid #E6DAFF;
-            border-radius: 25px;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 1rem;
-            background-color: white;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .message-input:focus {
-            border-color: #7E57C2;
-        }
-
-        .send-button {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 50%;
-            background-color: #7E57C2;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .send-button:hover {
-            background-color: #6A4C93;
-        }
-
-        .send-button:active {
-            transform: scale(0.95);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header {
-                padding: 0.75rem 1rem;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .chat-container {
-                padding: 0 0.5rem;
-            }
-
-            .message {
-                max-width: 85%;
-            }
-
-            .avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
-
-            .bubble {
-                padding: 0.6rem 0.8rem;
-                font-size: 0.9rem;
-            }
-
-            .message-input {
-                font-size: 0.9rem;
-            }
-
-            .send-button {
-                width: 45px;
-                height: 45px;
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .message {
-                max-width: 90%;
-            }
-
-            .avatar {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-            }
-
-            .bubble {
-                padding: 0.5rem 0.7rem;
-                font-size: 0.85rem;
-            }
-        }
-    </style>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>FRIDAY</h1>
+    <!-- Collapse Button -->
+    <button class="collapse-btn" id="collapseBtn">☰</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">FRIDAY</h2>
+            <button class="toggle-btn" id="toggleBtn">☰</button>
+        </div>
+        
+        <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+        
+        <div class="chat-list" id="chatList">
+            <!-- Chat items will be dynamically added here -->
+        </div>
     </div>
 
-    <!-- Chat Container -->
-    <div class="chat-container">
-        <!-- Messages Area -->
-        <div class="messages" id="messages">
-            <!-- Welcome Message -->
-            <div class="message bot">
-                <div class="avatar bot">F</div>
-                <div class="bubble bot">
-                    Hello! I'm FRIDAY, your personal AI financial advisor. How can I help you with your finances today?
-                </div>
+    <!-- Main Chat Area -->
+    <div class="main-chat">
+        <div class="messages-container" id="messagesContainer">
+            <div class="empty-state" id="emptyState">
+                <h2>Welcome to FRIDAY</h2>
+                <p>Start a new conversation to begin your financial journey</p>
             </div>
         </div>
 
@@ -317,140 +48,14 @@
 
         <!-- Input Area -->
         <div class="input-area">
-            <input type="text" class="message-input" id="messageInput" placeholder="Ask FRIDAY anything about your finances..." autocomplete="off">
-            <button class="send-button" id="sendButton">
-                ➤
-            </button>
+            <div class="input-container">
+                <textarea class="message-input" id="messageInput" placeholder="Ask FRIDAY anything about your finances..." autocomplete="off" rows="1"></textarea>
+                <button class="send-button" id="sendButton">➤</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        // DOM Elements
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const typingIndicator = document.getElementById('typingIndicator');
-
-        // Dummy responses for testing
-        const dummyResponses = [
-            "That's a great question! Let me help you understand that better.",
-            "I'd be happy to assist you with your financial planning needs.",
-            "Based on your situation, I'd recommend considering these options...",
-            "Let's break down your financial goals step by step.",
-            "Here are some strategies that might work well for you.",
-            "I understand your concern. Let me provide some guidance on this topic.",
-            "That's an important financial decision. Here's what you should know...",
-            "Great question! Here's how you can approach this situation.",
-            "I can help you create a plan for that. Let's start with the basics.",
-            "Financial planning is all about making informed decisions. Here's my advice..."
-        ];
-
-        // Function to add a message to the chat
-        function addMessage(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-            
-            const avatarDiv = document.createElement('div');
-            avatarDiv.className = `avatar ${isUser ? 'user' : 'bot'}`;
-            avatarDiv.textContent = isUser ? 'U' : 'F';
-            
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.className = `bubble ${isUser ? 'user' : 'bot'}`;
-            bubbleDiv.textContent = content;
-            
-            messageDiv.appendChild(avatarDiv);
-            messageDiv.appendChild(bubbleDiv);
-            
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-        }
-
-        // Function to show/hide typing indicator
-        function showTypingIndicator(show = true) {
-            if (show) {
-                typingIndicator.classList.add('show');
-            } else {
-                typingIndicator.classList.remove('show');
-            }
-            scrollToBottom();
-        }
-
-        // Function to scroll to bottom
-        function scrollToBottom() {
-            setTimeout(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 100);
-        }
-
-        // Function to get dummy response
-        function getDummyResponse() {
-            const randomIndex = Math.floor(Math.random() * dummyResponses.length);
-            return dummyResponses[randomIndex];
-        }
-
-        // Function to simulate API call (placeholder for future Colab backend)
-        async function callFRIDAYAPI(message) {
-            try {
-                // TODO: Replace with actual API call to Colab backend
-                // const response = await fetch('https://<your-ngrok-id>.ngrok-free.app/chat', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //     },
-                //     body: JSON.stringify({ message: message })
-                // });
-                // 
-                // if (!response.ok) {
-                //     throw new Error('API call failed');
-                // }
-                // 
-                // const data = await response.json();
-                // return data.reply;
-
-                // For now, simulate API delay and return dummy response
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-                return getDummyResponse();
-                
-            } catch (error) {
-                console.error('API call failed:', error);
-                return "⚠️ Could not reach FRIDAY backend.";
-            }
-        }
-
-        // Function to send message
-        async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
-
-            // Add user message
-            addMessage(message, true);
-            messageInput.value = '';
-
-            // Show typing indicator
-            showTypingIndicator(true);
-
-            // Get bot response
-            const botResponse = await callFRIDAYAPI(message);
-
-            // Hide typing indicator and add bot response
-            showTypingIndicator(false);
-            addMessage(botResponse, false);
-        }
-
-        // Event Listeners
-        sendButton.addEventListener('click', sendMessage);
-        
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // Focus input on page load
-        messageInput.focus();
-
-        // Auto-scroll to bottom on page load
-        scrollToBottom();
-    </script>
+    <!-- External JS -->
+    <script src="js/chat.js"></script>
 </body>
 </html>
