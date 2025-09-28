@@ -3,127 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FRIDAY Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/chat.css" />
-    <script src="js/chat.js" defer></script>
+    <title>Friday - Personal Finance Advisor</title>
+    <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
-    <!-- Collapsible Sidebar -->
-    <aside id="sidebar" class="sidebar">
-        <!-- Sidebar Header -->
-        <div class="sidebar-header">
-            <div class="sidebar-brand">
-                <h2 class="sidebar-title">FRIDAY</h2>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <h2>Friday</h2>
             </div>
-            <button id="sidebarToggle" class="sidebar-toggle" aria-expanded="true" aria-label="Toggle sidebar">
-                <span class="hamburger"></span>
-            </button>
+            <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+            <div class="chat-list" id="chatList"></div>
         </div>
-        
-        <!-- New Chat Button -->
-        <button id="newChatBtn" class="new-chat-btn">
-            <span class="plus-icon">+</span>
-            <span class="btn-text">New Chat</span>
-        </button>
-        
-        <!-- Chat List -->
-        <div id="chatList" class="chat-list">
-            <!-- Chat items will be dynamically added here -->
-        </div>
-    </aside>
 
-    <!-- Main Chat Container -->
-    <main id="chatContainer" class="chat-container">
-        <!-- Chat Header -->
-        <header id="chatHeader" class="chat-header">
-            <div class="chat-header-content">
-                <h1 id="chatTitle" class="chat-title">Welcome to FRIDAY</h1>
-                <div class="chat-subtitle">Your Personal AI Financial Advisor</div>
-            </div>
-        </header>
-
-        <!-- Messages Area -->
-        <section id="messages" class="messages" aria-live="polite">
-            <!-- Welcome Message -->
-            <div class="welcome-message">
-                <div class="welcome-content">
-                    <h3>👋 Hi there!</h3>
-                    <p>I'm FRIDAY, your personal AI financial advisor. I'm here to help you with:</p>
-                    <ul>
-                        <li>💰 Investment planning</li>
-                        <li>📊 Budget management</li>
-                        <li>🏠 Financial goals</li>
-                        <li>📈 Tax optimization</li>
-                    </ul>
-                    <p>Choose how you'd like to start our conversation:</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Quick Action Bubbles -->
-        <div id="quickActions" class="quick-actions">
-            <div class="prompt-bubbles">
-                <button class="prompt-bubble" data-type="general" id="qaGeneral">
-                    💬 General Financial Query
-                </button>
-                <button class="prompt-bubble" data-type="personal" id="qaPersonal">
-                    👤 Personal Financial Planning
-                </button>
+        <!-- Main Chat Area -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3 id="chatTitle">Welcome to Friday</h3>
+                <button id="themeToggle">🌙</button>
             </div>
 
-            <!-- Category Picker (hidden by default) -->
-            <div id="categoryPicker" class="category-picker hidden">
-                <div class="picker-header">
-                    <h3>Choose your financial focus area:</h3>
-                </div>
-                <div class="category-bubbles">
-                    <!-- Categories will be dynamically populated -->
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <div class="bot-avatar">🤖</div>
+                    <div class="welcome-text">
+                        <h3>Hi! I'm Friday, your personal finance advisor.</h3>
+                        <p>I can help you with budgeting, investments, loans, insurance, taxes, and financial goals.</p>
+                        <p>Start a new chat to get personalized advice!</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Subcategory Picker (hidden by default) -->
-            <div id="subcategoryPicker" class="subcategory-picker hidden">
-                <div class="picker-header">
-                    <h3>What specifically would you like help with?</h3>
-                </div>
-                <div class="subcategory-bubbles">
-                    <!-- Subcategories will be dynamically populated -->
+            <div class="quick-actions" id="quickActions"></div>
+            <div class="category-panel" id="categoryPanel" style="display: none;">
+                <h4>Choose a category:</h4>
+                <div class="pill-container">
+                    <button class="pill" data-category="Budgeting">💰 Budgeting</button>
+                    <button class="pill" data-category="Investments">📈 Investments</button>
+                    <button class="pill" data-category="Loans">🏦 Loans</button>
+                    <button class="pill" data-category="Insurance">🛡️ Insurance</button>
+                    <button class="pill" data-category="Tax">📋 Tax</button>
+                    <button class="pill" data-category="Goals">🎯 Goals</button>
                 </div>
             </div>
 
-            <!-- Intake Form (hidden by default) -->
-            <div id="intakeForm" class="intake-form hidden">
-                <div class="form-header">
-                    <h3>Tell us about your situation</h3>
-                    <p>This helps me provide personalized advice tailored to your needs.</p>
+            <div class="subcategory-panel" id="subcategoryPanel" style="display: none;">
+                <h4>Choose a subcategory:</h4>
+                <div class="pill-container" id="subcategoryContainer"></div>
+            </div>
+
+            <div class="intake-panel" id="intakePanel" style="display: none;">
+                <h4>Tell us about yourself:</h4>
+                <form id="intakeForm" class="intake-form"></form>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
                 </div>
-                <form id="intakeFormFields" class="intake-fields">
-                    <!-- Form fields will be dynamically populated -->
-                </form>
-                <div class="form-actions">
-                    <button type="button" id="skipIntake" class="skip-btn">Skip for now</button>
-                    <button type="submit" id="submitIntake" class="submit-btn">Continue</button>
+                <span>Friday is typing...</span>
+            </div>
+
+            <div class="input-bar">
+                <div class="input-container">
+                    <textarea id="userInput" placeholder="Type your message..." rows="1" disabled></textarea>
+                    <button id="sendBtn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
-
-        <!-- Input Area -->
-        <div id="inputBar" class="input-bar">
-            <div class="input-container">
-                <textarea 
-                    id="userInput" 
-                    rows="1" 
-                    placeholder="Ask FRIDAY anything about your finances..."
-                    aria-label="Type your message"
-                ></textarea>
-                <button id="sendBtn" class="send-btn" aria-label="Send message">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </main>
+    </div>
+    <script src="js/chat.js"></script>
 </body>
 </html>
