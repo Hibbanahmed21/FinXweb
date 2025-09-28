@@ -71,6 +71,41 @@
                     👤 Personal Financial Planning
                 </button>
             </div>
+
+            <!-- Category Picker (hidden by default) -->
+            <div id="categoryPicker" class="category-picker hidden">
+                <div class="picker-header">
+                    <h3>Choose your financial focus area:</h3>
+                </div>
+                <div class="category-bubbles">
+                    <!-- Categories will be dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Subcategory Picker (hidden by default) -->
+            <div id="subcategoryPicker" class="subcategory-picker hidden">
+                <div class="picker-header">
+                    <h3>What specifically would you like help with?</h3>
+                </div>
+                <div class="subcategory-bubbles">
+                    <!-- Subcategories will be dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Intake Form (hidden by default) -->
+            <div id="intakeForm" class="intake-form hidden">
+                <div class="form-header">
+                    <h3>Tell us about your situation</h3>
+                    <p>This helps me provide personalized advice tailored to your needs.</p>
+                </div>
+                <form id="intakeFormFields" class="intake-fields">
+                    <!-- Form fields will be dynamically populated -->
+                </form>
+                <div class="form-actions">
+                    <button type="button" id="skipIntake" class="skip-btn">Skip for now</button>
+                    <button type="submit" id="submitIntake" class="submit-btn">Continue</button>
+                </div>
+            </div>
         </div>
 
         <!-- Input Area -->

@@ -605,6 +605,226 @@ body {
     }
 }
 
+/* Category and Subcategory Pickers */
+.category-picker,
+.subcategory-picker,
+.intake-form {
+    padding: 2rem;
+    background: white;
+    border-radius: 20px;
+    margin-top: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    animation: slideIn 0.3s ease-out;
+}
+
+.category-picker.hidden,
+.subcategory-picker.hidden,
+.intake-form.hidden {
+    display: none;
+}
+
+.picker-header,
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.picker-header h3,
+.form-header h3 {
+    font-size: 1.4rem;
+    color: #1e293b;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.form-header p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.category-bubbles,
+.subcategory-bubbles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    justify-content: center;
+}
+
+.category-bubble,
+.subcategory-bubble {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #475569;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-bubble:hover,
+.subcategory-bubble:hover {
+    border-color: #7E57C2;
+    background: linear-gradient(135deg, #7E57C2 0%, #6A4C93 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(126, 87, 194, 0.3);
+}
+
+.category-bubble::before,
+.subcategory-bubble::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.category-bubble:hover::before,
+.subcategory-bubble:hover::before {
+    left: 100%;
+}
+
+/* Intake Form Styles */
+.intake-fields {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: #7E57C2;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(126, 87, 194, 0.1);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-field .field-hint {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.skip-btn,
+.submit-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 25px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 140px;
+}
+
+.skip-btn {
+    background: #f8fafc;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.skip-btn:hover {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #7E57C2 0%, #6A4C93 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(126, 87, 194, 0.3);
+}
+
+.submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(126, 87, 194, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* System Message for Intake Completion */
+.system-message {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.system-message-content {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    color: #0369a1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-align: center;
+    max-width: 600px;
+}
+
+/* Slide-in Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 900px) {
     .sidebar {
@@ -673,5 +893,27 @@ body {
     
     .welcome-content {
         padding: 1.5rem;
+    }
+    
+    .category-picker,
+    .subcategory-picker,
+    .intake-form {
+        padding: 1.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .category-bubbles,
+    .subcategory-bubbles {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .skip-btn,
+    .submit-btn {
+        width: 100%;
     }
 }
