@@ -1,6 +1,7 @@
 // DOM Elements
 const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarToggleExternal = document.getElementById('sidebarToggleExternal');
 const newChatBtn = document.getElementById('newChatBtn');
 const chatList = document.getElementById('chatList');
 const messages = document.getElementById('messages');
@@ -21,6 +22,7 @@ let currentChatId = null;
 let chats = [];
 let isSidebarCollapsed = false;
 const STORAGE_KEY = 'friday_chats';
+const SIDEBAR_STATE_KEY = 'friday_sidebar_collapsed';
 
 // Categories and Subcategories
 const CATEGORIES = [
@@ -154,9 +156,11 @@ const DEFAULT_INTAKE_FORM = [
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     loadChats();
+    loadSidebarState();
     renderChatList();
     setupEventListeners();
     autoResizeTextarea();
+    updateSidebarToggleVisibility();
     console.log('FRIDAY Chat initialized');
 });
 
@@ -164,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupEventListeners() {
     // Sidebar toggle
     sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarToggleExternal.addEventListener('click', toggleSidebar);
     
     // New chat
     newChatBtn.addEventListener('click', createNewChat);
@@ -196,22 +201,102 @@ function setupEventListeners() {
             closeAllDropdowns();
         }
     });
+    
+    // Close sidebar when clicking backdrop on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 900 && !isSidebarCollapsed && 
+            !sidebar.contains(e.target) && !sidebarToggleExternal.contains(e.target)) {
+            toggleSidebar();
+        }
+    });
+    
+    // Touch gesture support for mobile
+    setupTouchGestures();
 }
 
 // Sidebar Functions
 function toggleSidebar() {
     isSidebarCollapsed = !isSidebarCollapsed;
     sidebar.classList.toggle('collapsed', isSidebarCollapsed);
-    sidebarToggle.setAttribute('aria-expanded', !isSidebarCollapsed);
     
-    // Update hamburger animation
-    const hamburger = sidebarToggle.querySelector('.hamburger');
+    // Update both toggle buttons
+    sidebarToggle.setAttribute('aria-expanded', !isSidebarCollapsed);
+    sidebarToggleExternal.setAttribute('aria-expanded', !isSidebarCollapsed);
+    
+    // Update internal toggle button icon
+    sidebarToggle.classList.toggle('collapsed', isSidebarCollapsed);
+    
+    // Update external toggle button visibility and icon
+    updateSidebarToggleVisibility();
+    
+    // Save state
+    saveSidebarState();
+}
+
+function updateSidebarToggleVisibility() {
     if (isSidebarCollapsed) {
-        hamburger.style.transform = 'rotate(45deg)';
-        hamburger.style.background = '#7E57C2';
+        sidebarToggleExternal.classList.add('show');
+        // Update external toggle icon to point right (open sidebar)
+        const togglePath = sidebarToggleExternal.querySelector('.toggle-path');
+        togglePath.setAttribute('d', 'M9 18L15 12L9 6');
     } else {
-        hamburger.style.transform = 'rotate(0deg)';
-        hamburger.style.background = '#64748b';
+        sidebarToggleExternal.classList.remove('show');
+        // Update external toggle icon to point left (close sidebar)
+        const togglePath = sidebarToggleExternal.querySelector('.toggle-path');
+        togglePath.setAttribute('d', 'M15 18L9 12L15 6');
+    }
+}
+
+function loadSidebarState() {
+    const saved = localStorage.getItem(SIDEBAR_STATE_KEY);
+    if (saved !== null) {
+        isSidebarCollapsed = JSON.parse(saved);
+        sidebar.classList.toggle('collapsed', isSidebarCollapsed);
+        sidebarToggle.classList.toggle('collapsed', isSidebarCollapsed);
+        sidebarToggle.setAttribute('aria-expanded', !isSidebarCollapsed);
+        sidebarToggleExternal.setAttribute('aria-expanded', !isSidebarCollapsed);
+    }
+}
+
+function saveSidebarState() {
+    localStorage.setItem(SIDEBAR_STATE_KEY, JSON.stringify(isSidebarCollapsed));
+}
+
+// Touch Gesture Support
+function setupTouchGestures() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    });
+    
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipeGesture();
+    });
+    
+    function handleSwipeGesture() {
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        const minSwipeDistance = 50;
+        
+        // Only handle horizontal swipes that are longer than vertical swipes
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            if (window.innerWidth <= 900) {
+                if (deltaX > 0 && touchStartX < 50 && isSidebarCollapsed) {
+                    // Swipe right from left edge - open sidebar
+                    toggleSidebar();
+                } else if (deltaX < 0 && !isSidebarCollapsed) {
+                    // Swipe left - close sidebar
+                    toggleSidebar();
+                }
+            }
+        }
     }
 }
 

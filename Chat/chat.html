@@ -9,6 +9,13 @@
     <script src="js/chat.js" defer></script>
 </head>
 <body>
+    <!-- Sidebar Toggle Button (Always Visible) -->
+    <button id="sidebarToggleExternal" class="sidebar-toggle-external" aria-expanded="true" aria-label="Toggle sidebar">
+        <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="toggle-path" d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
     <!-- Collapsible Sidebar -->
     <aside id="sidebar" class="sidebar">
         <!-- Sidebar Header -->
@@ -17,7 +24,9 @@
                 <h2 class="sidebar-title">FRIDAY</h2>
             </div>
             <button id="sidebarToggle" class="sidebar-toggle" aria-expanded="true" aria-label="Toggle sidebar">
-                <span class="hamburger"></span>
+                <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </button>
         </div>
         

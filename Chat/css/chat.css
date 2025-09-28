@@ -12,6 +12,55 @@ body {
     overflow: hidden;
 }
 
+/* External Sidebar Toggle Button */
+.sidebar-toggle-external {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1100;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-20px);
+}
+
+.sidebar-toggle-external.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.sidebar-toggle-external:hover {
+    background: #f8fafc;
+    border-color: #7E57C2;
+    transform: translateX(0) scale(1.05);
+    box-shadow: 0 6px 20px rgba(126, 87, 194, 0.2);
+}
+
+.sidebar-toggle-external .toggle-icon {
+    color: #64748b;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle-external:hover .toggle-icon {
+    color: #7E57C2;
+}
+
+.sidebar-toggle-external .toggle-path {
+    transition: all 0.3s ease;
+}
+
 /* Sidebar */
 .sidebar {
     width: 280px;
@@ -19,7 +68,7 @@ body {
     border-right: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
     z-index: 1000;
@@ -28,9 +77,8 @@ body {
 
 .sidebar.collapsed {
     width: 0;
-    opacity: 0;
-    pointer-events: none;
     transform: translateX(-100%);
+    box-shadow: none;
 }
 
 .sidebar-header {
@@ -62,7 +110,7 @@ body {
     border-radius: 8px;
     padding: 0.5rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,34 +120,25 @@ body {
 
 .sidebar-toggle:hover {
     background: #f1f5f9;
-    border-color: #cbd5e1;
+    border-color: #7E57C2;
+    transform: scale(1.05);
 }
 
-.hamburger {
-    width: 18px;
-    height: 2px;
-    background: #64748b;
-    position: relative;
+.sidebar-toggle .chevron-icon {
+    color: #64748b;
     transition: all 0.3s ease;
+    transform-origin: center;
 }
 
-.hamburger::before,
-.hamburger::after {
-    content: '';
-    position: absolute;
-    width: 18px;
-    height: 2px;
-    background: #64748b;
-    transition: all 0.3s ease;
+.sidebar-toggle:hover .chevron-icon {
+    color: #7E57C2;
 }
 
-.hamburger::before {
-    top: -6px;
+.sidebar-toggle.collapsed .chevron-icon {
+    transform: rotate(180deg);
 }
 
-.hamburger::after {
-    top: 6px;
-}
+/* Remove old hamburger styles - no longer needed */
 
 /* New Chat Button */
 .new-chat-btn {
@@ -268,6 +307,7 @@ body {
     flex-direction: column;
     background-color: #ffffff;
     position: relative;
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Chat Header */
@@ -828,19 +868,41 @@ body {
 /* Responsive Design */
 @media (max-width: 900px) {
     .sidebar {
-        position: absolute;
-        height: 100%;
+        position: fixed;
+        height: 100vh;
         z-index: 1000;
+        top: 0;
+        left: 0;
     }
     
     .sidebar.collapsed {
         width: 0;
-        opacity: 0;
-        pointer-events: none;
+        transform: translateX(-100%);
     }
     
     .chat-container {
         width: 100%;
+        margin-left: 0;
+    }
+    
+    .sidebar-toggle-external {
+        top: 0.75rem;
+        left: 0.75rem;
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Add backdrop when sidebar is open on mobile */
+    .sidebar:not(.collapsed)::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+        animation: fadeIn 0.3s ease;
     }
     
     .messages {
