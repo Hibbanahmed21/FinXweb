@@ -3,59 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FRIDAY Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- External CSS -->
-    <link rel="stylesheet" href="css/chat.css">
+    <title>FRIDAY - Your Personal AI Financial Advisor</title>
+    <link rel="stylesheet" href="css/chat.css" />
 </head>
 <body>
-    <!-- Collapse Button -->
-    <button class="collapse-btn" id="collapseBtn">☰</button>
-
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <aside id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h2 class="sidebar-title">FRIDAY</h2>
-            <button class="toggle-btn" id="toggleBtn">☰</button>
+            <button id="sidebarToggle" aria-expanded="true" aria-controls="sidebar" title="Toggle sidebar">☰</button>
+            <button id="newChatBtn" title="New chat">＋ New</button>
+            <button id="clearAllBtn" title="Clear all">🗑</button>
         </div>
-        
-        <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
-        
-        <div class="chat-list" id="chatList">
-            <!-- Chat items will be dynamically added here -->
+        <div class="search-container">
+            <input id="chatSearch" placeholder="Search chats…" aria-label="Search chats" />
         </div>
-    </div>
+        <div id="chatList" role="navigation" aria-label="Chats" class="chat-list"></div>
+    </aside>
 
     <!-- Main Chat Area -->
-    <div class="main-chat">
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-state" id="emptyState">
-                <h2>Welcome to FRIDAY</h2>
-                <p>Start a new conversation to begin your financial journey</p>
+    <main id="chatContainer" class="chat-container">
+        <!-- Chat Header -->
+        <header id="chatHeader" class="chat-header">
+            <span id="chatTitle">New Chat</span>
+            <div class="header-actions">
+                <button id="renameChatBtn" title="Rename">✏️</button>
+                <button id="deleteChatBtn" title="Delete">🗑</button>
+                <button id="devMenuBtn" title="Dev Tools" class="dev-menu-btn">⚙️</button>
             </div>
+        </header>
+
+        <!-- Messages Area -->
+        <div id="messages" aria-live="polite" class="messages"></div>
+
+        <!-- Quick Actions (always visible above input) -->
+        <div id="quickActions" class="quick-actions">
+            <button class="qa-bubble" id="qaGeneral" data-type="general">💬 General Query</button>
+            <button class="qa-bubble" id="qaPersonal" data-type="personal">👤 Personal Query</button>
         </div>
 
-        <!-- Typing Indicator -->
-        <div class="typing-indicator" id="typingIndicator">
-            <div class="avatar bot">F</div>
-            <div class="typing-dots">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
+        <!-- Contextual Panels -->
+        <div id="categoryPicker" class="panel" hidden>
+            <h3>Choose a Category</h3>
+            <div class="pill-container"></div>
         </div>
 
-        <!-- Input Area -->
-        <div class="input-area">
+        <div id="subcategoryPicker" class="panel" hidden>
+            <h3>Choose a Subcategory</h3>
+            <div class="pill-container"></div>
+        </div>
+
+        <form id="intakeForm" class="panel intake-form" hidden>
+            <h3>Tell us more to personalize your advice</h3>
+            <div class="form-fields"></div>
+            <div class="form-actions">
+                <button type="button" id="skipIntakeBtn">Skip for now</button>
+                <button type="submit" id="continueIntakeBtn">Continue</button>
+            </div>
+        </form>
+
+        <!-- Input Bar -->
+        <div id="inputBar" class="input-bar">
             <div class="input-container">
-                <textarea class="message-input" id="messageInput" placeholder="Ask FRIDAY anything about your finances..." autocomplete="off" rows="1"></textarea>
-                <button class="send-button" id="sendButton">➤</button>
+                <textarea id="userInput" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter = newline)" aria-label="Message input"></textarea>
+                <button id="sendBtn" title="Send message">Send</button>
             </div>
+            <div id="typingIndicator" class="typing-indicator" hidden>FRIDAY is typing…</div>
         </div>
+    </main>
+
+    <!-- Dev Menu (Hidden) -->
+    <div id="devMenu" class="dev-menu" hidden>
+        <h4>Dev Tools</h4>
+        <button id="seedDemoBtn">Seed Demo Chats</button>
+        <button id="exportChatsBtn">Export Chats</button>
+        <input type="file" id="importChatsInput" accept=".json" hidden>
+        <button id="importChatsBtn">Import Chats</button>
+        <button id="clearStorageBtn">Clear Storage</button>
+        <button id="closeDevMenuBtn">Close</button>
     </div>
 
-    <!-- External JS -->
-    <script src="js/chat.js"></script>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/chat.js" defer></script>
 </body>
 </html>
