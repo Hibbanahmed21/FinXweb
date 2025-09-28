@@ -5,57 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FRIDAY Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- External CSS -->
-    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/chat.css" />
+    <script src="js/chat.js" defer></script>
 </head>
 <body>
-    <!-- Collapse Button -->
-    <button class="collapse-btn" id="collapseBtn">☰</button>
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- Collapsible Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <!-- Sidebar Header -->
         <div class="sidebar-header">
-            <h2 class="sidebar-title">FRIDAY</h2>
-            <button class="toggle-btn" id="toggleBtn">☰</button>
+            <div class="sidebar-brand">
+                <h2 class="sidebar-title">FRIDAY</h2>
+            </div>
+            <button id="sidebarToggle" class="sidebar-toggle" aria-expanded="true" aria-label="Toggle sidebar">
+                <span class="hamburger"></span>
+            </button>
         </div>
         
-        <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+        <!-- New Chat Button -->
+        <button id="newChatBtn" class="new-chat-btn">
+            <span class="plus-icon">+</span>
+            <span class="btn-text">New Chat</span>
+        </button>
         
-        <div class="chat-list" id="chatList">
+        <!-- Chat List -->
+        <div id="chatList" class="chat-list">
             <!-- Chat items will be dynamically added here -->
         </div>
-    </div>
+    </aside>
 
-    <!-- Main Chat Area -->
-    <div class="main-chat">
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-state" id="emptyState">
-                <h2>Welcome to FRIDAY</h2>
-                <p>Start a new conversation to begin your financial journey</p>
+    <!-- Main Chat Container -->
+    <main id="chatContainer" class="chat-container">
+        <!-- Chat Header -->
+        <header id="chatHeader" class="chat-header">
+            <div class="chat-header-content">
+                <h1 id="chatTitle" class="chat-title">Welcome to FRIDAY</h1>
+                <div class="chat-subtitle">Your Personal AI Financial Advisor</div>
             </div>
-        </div>
+        </header>
 
-        <!-- Typing Indicator -->
-        <div class="typing-indicator" id="typingIndicator">
-            <div class="avatar bot">F</div>
-            <div class="typing-dots">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
+        <!-- Messages Area -->
+        <section id="messages" class="messages" aria-live="polite">
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <div class="welcome-content">
+                    <h3>👋 Hi there!</h3>
+                    <p>I'm FRIDAY, your personal AI financial advisor. I'm here to help you with:</p>
+                    <ul>
+                        <li>💰 Investment planning</li>
+                        <li>📊 Budget management</li>
+                        <li>🏠 Financial goals</li>
+                        <li>📈 Tax optimization</li>
+                    </ul>
+                    <p>Choose how you'd like to start our conversation:</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Action Bubbles -->
+        <div id="quickActions" class="quick-actions">
+            <div class="prompt-bubbles">
+                <button class="prompt-bubble" data-type="general" id="qaGeneral">
+                    💬 General Financial Query
+                </button>
+                <button class="prompt-bubble" data-type="personal" id="qaPersonal">
+                    👤 Personal Financial Planning
+                </button>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="input-area">
+        <div id="inputBar" class="input-bar">
             <div class="input-container">
-                <textarea class="message-input" id="messageInput" placeholder="Ask FRIDAY anything about your finances..." autocomplete="off" rows="1"></textarea>
-                <button class="send-button" id="sendButton">➤</button>
+                <textarea 
+                    id="userInput" 
+                    rows="1" 
+                    placeholder="Ask FRIDAY anything about your finances..."
+                    aria-label="Type your message"
+                ></textarea>
+                <button id="sendBtn" class="send-btn" aria-label="Send message">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+                    </svg>
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- External JS -->
-    <script src="js/chat.js"></script>
+    </main>
 </body>
 </html>

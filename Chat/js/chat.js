@@ -1,18 +1,19 @@
 // DOM Elements
 const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('toggleBtn');
-const collapseBtn = document.getElementById('collapseBtn');
+const sidebarToggle = document.getElementById('sidebarToggle');
 const newChatBtn = document.getElementById('newChatBtn');
 const chatList = document.getElementById('chatList');
-const messagesContainer = document.getElementById('messagesContainer');
-const emptyState = document.getElementById('emptyState');
-const messageInput = document.getElementById('messageInput');
-const sendButton = document.getElementById('sendButton');
-const typingIndicator = document.getElementById('typingIndicator');
+const messages = document.getElementById('messages');
+const chatTitle = document.getElementById('chatTitle');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const qaGeneral = document.getElementById('qaGeneral');
+const qaPersonal = document.getElementById('qaPersonal');
 
 // State
 let currentChatId = null;
 let chats = [];
+let isSidebarCollapsed = false;
 const STORAGE_KEY = 'friday_chats';
 
 // Initialize
@@ -26,20 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Event Listeners
 function setupEventListeners() {
-    toggleBtn.addEventListener('click', toggleSidebar);
-    collapseBtn.addEventListener('click', expandSidebar);
+    // Sidebar toggle
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    
+    // New chat
     newChatBtn.addEventListener('click', createNewChat);
-    sendButton.addEventListener('click', sendMessage);
-
-    messageInput.addEventListener('keypress', (e) => {
+    
+    // Send message
+    sendBtn.addEventListener('click', sendMessage);
+    
+    // Quick actions
+    qaGeneral.addEventListener('click', () => handleQuickAction('general'));
+    qaPersonal.addEventListener('click', () => handleQuickAction('personal'));
+    
+    // Input handling
+    userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-
-    messageInput.addEventListener('input', autoResizeTextarea);
-
+    
+    userInput.addEventListener('input', autoResizeTextarea);
+    
     // Close dropdowns when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.chat-item-menu')) {
@@ -50,18 +60,18 @@ function setupEventListeners() {
 
 // Sidebar Functions
 function toggleSidebar() {
-    sidebar.classList.toggle('collapsed');
-    updateCollapseButton();
-}
-function expandSidebar() {
-    sidebar.classList.remove('collapsed');
-    updateCollapseButton();
-}
-function updateCollapseButton() {
-    if (sidebar.classList.contains('collapsed')) {
-        collapseBtn.classList.add('show');
+    isSidebarCollapsed = !isSidebarCollapsed;
+    sidebar.classList.toggle('collapsed', isSidebarCollapsed);
+    sidebarToggle.setAttribute('aria-expanded', !isSidebarCollapsed);
+    
+    // Update hamburger animation
+    const hamburger = sidebarToggle.querySelector('.hamburger');
+    if (isSidebarCollapsed) {
+        hamburger.style.transform = 'rotate(45deg)';
+        hamburger.style.background = '#7E57C2';
     } else {
-        collapseBtn.classList.remove('show');
+        hamburger.style.transform = 'rotate(0deg)';
+        hamburger.style.background = '#64748b';
     }
 }
 
@@ -71,33 +81,67 @@ function createNewChat() {
     const newChat = {
         id: currentChatId,
         title: 'New Chat',
-        messages: []
+        messages: [],
+        createdAt: new Date().toISOString()
     };
 
     chats.unshift(newChat);
     saveChats();
     renderChatList();
     loadChat(currentChatId);
-    messageInput.focus();
+    userInput.focus();
+    
+    // Hide welcome message and show empty state
+    const welcomeMessage = messages.querySelector('.welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+    }
 }
+
 function loadChat(chatId) {
     const chat = chats.find(c => c.id === chatId);
     if (!chat) return;
 
     currentChatId = chatId;
+    chatTitle.textContent = chat.title;
 
-    messagesContainer.innerHTML = '';
-    emptyState.style.display = 'none';
+    // Clear messages
+    messages.innerHTML = '';
+    
+    // Remove welcome message
+    const welcomeMessage = messages.querySelector('.welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+    }
 
-    chat.messages.forEach(message => {
-        addMessageToDOM(message.content, message.isUser);
-    });
+    // Load chat messages
+    if (chat.messages.length === 0) {
+        showEmptyState();
+    } else {
+        chat.messages.forEach(message => {
+            addMessageToDOM(message.content, message.isUser);
+        });
+    }
 
+    // Update active chat in sidebar
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
     document.querySelector(`[data-chat-id="${chatId}"]`)?.classList.add('active');
 }
+
+function showEmptyState() {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.innerHTML = `
+        <div class="empty-content">
+            <h3>Start a conversation</h3>
+            <p>Ask FRIDAY anything about your finances or use the quick actions below.</p>
+        </div>
+    `;
+    messages.appendChild(emptyState);
+}
+
 function addMessageToChat(content, isUser) {
     if (!currentChatId) {
         createNewChat();
@@ -105,16 +149,18 @@ function addMessageToChat(content, isUser) {
 
     const chat = chats.find(c => c.id === currentChatId);
     if (chat) {
-        chat.messages.push({ content, isUser });
+        chat.messages.push({ content, isUser, timestamp: new Date().toISOString() });
 
         if (chat.title === 'New Chat' && isUser) {
             chat.title = generateTitle(content);
+            chatTitle.textContent = chat.title;
             renderChatList();
         }
 
         saveChats();
     }
 }
+
 function generateTitle(message) {
     const words = message.trim().split(' ').slice(0, 4);
     return words.join(' ') + (message.split(' ').length > 4 ? '...' : '');
@@ -136,21 +182,33 @@ function addMessageToDOM(content, isUser) {
     messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
 
-    messagesContainer.appendChild(messageDiv);
+    messages.appendChild(messageDiv);
     scrollToBottom();
 }
-function showTypingIndicator(show = true) {
-    if (show) {
-        typingIndicator.classList.add('show');
-    } else {
-        typingIndicator.classList.remove('show');
-    }
-    scrollToBottom();
-}
+
 function scrollToBottom() {
     setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messages.scrollTop = messages.scrollHeight;
     }, 100);
+}
+
+// Quick Actions
+function handleQuickAction(type) {
+    if (!currentChatId) {
+        createNewChat();
+    }
+    
+    let message = '';
+    if (type === 'general') {
+        message = 'I have a general question about personal finance. Can you help me understand the basics?';
+    } else if (type === 'personal') {
+        message = 'I need help with my personal financial planning. Where should I start?';
+    }
+    
+    if (message) {
+        userInput.value = message;
+        sendMessage();
+    }
 }
 
 // API Simulation (placeholder for backend integration)
@@ -174,19 +232,25 @@ async function getBotResponse(message) {
 }
 
 async function sendMessage() {
-    const message = messageInput.value.trim();
+    const message = userInput.value.trim();
     if (!message) return;
 
     console.log('Sending message:', message);
 
-    sendButton.disabled = true;
-    emptyState.style.display = 'none';
+    sendBtn.disabled = true;
+    
+    // Remove empty state if it exists
+    const emptyState = messages.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
 
     addMessageToDOM(message, true);
     addMessageToChat(message, true);
-    messageInput.value = '';
+    userInput.value = '';
     autoResizeTextarea();
 
+    // Show typing indicator
     showTypingIndicator(true);
 
     try {
@@ -204,8 +268,35 @@ async function sendMessage() {
         addMessageToChat(errorMessage, false);
     }
 
-    sendButton.disabled = false;
-    messageInput.focus();
+    sendBtn.disabled = false;
+    userInput.focus();
+}
+
+function showTypingIndicator(show = true) {
+    let indicator = document.getElementById('typingIndicator');
+    
+    if (show && !indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'typingIndicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+            <div class="avatar bot">F</div>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        messages.appendChild(indicator);
+    }
+    
+    if (indicator) {
+        indicator.classList.toggle('show', show);
+    }
+    
+    if (show) {
+        scrollToBottom();
+    }
 }
 
 // UI Functions
@@ -225,12 +316,23 @@ function renderChatList() {
         chatText.className = 'chat-item-text';
         chatText.textContent = chat.title;
 
+        const menuContainer = document.createElement('div');
+        menuContainer.className = 'chat-item-menu';
+
+        const menuBtn = document.createElement('button');
+        menuBtn.className = 'menu-btn';
+        menuBtn.innerHTML = '⋯';
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown(chat.id);
+        });
+
         const dropdown = document.createElement('div');
         dropdown.className = 'dropdown-menu';
 
         const renameItem = document.createElement('div');
         renameItem.className = 'dropdown-item';
-        renameItem.innerHTML = `<div class="dropdown-icon">✏️</div><span>Rename</span>`;
+        renameItem.innerHTML = '✏️ Rename';
         renameItem.addEventListener('click', (e) => {
             e.stopPropagation();
             renameChat(chat.id);
@@ -239,7 +341,7 @@ function renderChatList() {
 
         const deleteItem = document.createElement('div');
         deleteItem.className = 'dropdown-item delete';
-        deleteItem.innerHTML = `<div class="dropdown-icon">🗑️</div><span>Delete</span>`;
+        deleteItem.innerHTML = '🗑️ Delete';
         deleteItem.addEventListener('click', (e) => {
             e.stopPropagation();
             deleteChat(chat.id);
@@ -248,19 +350,6 @@ function renderChatList() {
 
         dropdown.appendChild(renameItem);
         dropdown.appendChild(deleteItem);
-
-        // ✅ Updated menu button
-        const menuBtn = document.createElement('button');
-        menuBtn.className = 'menu-btn';
-        menuBtn.innerHTML = '⋯';
-        menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            closeAllDropdowns(); // close others
-            dropdown.classList.toggle('show'); // toggle this one instead of forcing open
-        });
-
-        const menuContainer = document.createElement('div');
-        menuContainer.className = 'chat-item-menu';
         menuContainer.appendChild(menuBtn);
 
         chatItem.appendChild(chatText);
@@ -273,8 +362,8 @@ function renderChatList() {
 }
 
 function autoResizeTextarea() {
-    messageInput.style.height = 'auto';
-    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+    userInput.style.height = 'auto';
+    userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
 }
 
 // Dropdown Functions
@@ -284,6 +373,7 @@ function toggleDropdown(chatId) {
     const dropdown = chatItem.querySelector('.dropdown-menu');
     dropdown.classList.add('show');
 }
+
 function closeAllDropdowns() {
     document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
         dropdown.classList.remove('show');
@@ -300,9 +390,14 @@ function renameChat(chatId) {
         chat.title = newTitle.trim();
         saveChats();
         renderChatList();
+        
+        if (chatId === currentChatId) {
+            chatTitle.textContent = chat.title;
+        }
     }
     closeAllDropdowns();
 }
+
 function deleteChat(chatId) {
     const chat = chats.find(c => c.id === chatId);
     if (!chat) return;
@@ -312,8 +407,22 @@ function deleteChat(chatId) {
 
         if (chatId === currentChatId) {
             currentChatId = null;
-            messagesContainer.innerHTML =
-                '<div class="empty-state" id="emptyState"><h2>Welcome to FRIDAY</h2><p>Start a new conversation to begin your financial journey</p></div>';
+            chatTitle.textContent = 'Welcome to FRIDAY';
+            messages.innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-content">
+                        <h3>👋 Hi there!</h3>
+                        <p>I'm FRIDAY, your personal AI financial advisor. I'm here to help you with:</p>
+                        <ul>
+                            <li>💰 Investment planning</li>
+                            <li>📊 Budget management</li>
+                            <li>🏠 Financial goals</li>
+                            <li>📈 Tax optimization</li>
+                        </ul>
+                        <p>Choose how you'd like to start our conversation:</p>
+                    </div>
+                </div>
+            `;
         }
 
         saveChats();
@@ -329,6 +438,7 @@ function loadChats() {
         chats = JSON.parse(stored);
     }
 }
+
 function saveChats() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
 }
