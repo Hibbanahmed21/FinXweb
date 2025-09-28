@@ -21,8 +21,20 @@
         <!-- Main Chat Area -->
         <div class="chat-container">
             <div class="chat-header">
-                <h3 id="chatTitle">Welcome to Friday</h3>
-                <button id="themeToggle">🌙</button>
+                <div class="header-left">
+                    <button class="sidebar-hover-toggle" id="sidebarHoverToggle" title="Toggle Sidebar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h3 id="chatTitle">Welcome to Friday</h3>
+                </div>
+                <div class="header-right">
+                    <button id="connectApiBtn" title="Connect API">🔗</button>
+                    <button id="themeToggle">🌙</button>
+                </div>
             </div>
 
             <div class="messages-container" id="messagesContainer">
@@ -35,6 +47,10 @@
                     </div>
                 </div>
             </div>
+
+        <button class="scroll-bottom" id="scrollBottomBtn" title="Scroll to bottom" style="display:none;">
+            ⬇️
+        </button>
 
             <div class="quick-actions" id="quickActions"></div>
             <div class="category-panel" id="categoryPanel" style="display: none;">

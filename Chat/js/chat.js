@@ -1,6 +1,6 @@
 // Global Configuration
-const USE_API = false;
-const BACKEND_URL = "https://<ngrok_url>/chat";
+let USE_API = JSON.parse(localStorage.getItem("friday_use_api") || "false");
+let BACKEND_URL = localStorage.getItem("friday_backend_url") || "https://<ngrok_url>/chat";
 
 // Global State
 let chats = JSON.parse(localStorage.getItem("friday_chats")) || [];
@@ -9,6 +9,7 @@ let currentChatId = null;
 // DOM Elements
 const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
+const sidebarHoverToggle = document.getElementById("sidebarHoverToggle");
 const newChatBtn = document.getElementById("newChatBtn");
 const chatList = document.getElementById("chatList");
 const chatTitle = document.getElementById("chatTitle");
@@ -23,6 +24,8 @@ const typingIndicator = document.getElementById("typingIndicator");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const themeToggle = document.getElementById("themeToggle");
+const scrollBottomBtn = document.getElementById("scrollBottomBtn");
+const connectApiBtn = document.getElementById("connectApiBtn");
 
 // Subcategory mappings
 const subcategories = {
@@ -83,9 +86,11 @@ const intakeFields = {
 // Event Listeners
 document.addEventListener("DOMContentLoaded", init);
 sidebarToggle.addEventListener("click", toggleSidebar);
+sidebarHoverToggle.addEventListener("click", toggleSidebar);
 newChatBtn.addEventListener("click", startNewChat);
 sendBtn.addEventListener("click", handleSend);
 themeToggle.addEventListener("click", toggleTheme);
+if (connectApiBtn) connectApiBtn.addEventListener("click", connectApiPrompt);
 
 userInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
@@ -98,6 +103,11 @@ userInput.addEventListener("input", () => {
   userInput.style.height = "auto";
   userInput.style.height = userInput.scrollHeight + "px";
 });
+
+// Smooth auto-scroll utilities
+function smoothScrollToBottom() {
+  messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+}
 
 // Initialization
 function init() {
@@ -116,6 +126,18 @@ function loadTheme() {
   themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
 }
 
+function connectApiPrompt() {
+  const current = BACKEND_URL || "";
+  const entered = prompt("Enter your API endpoint URL (e.g., https://xxxx.ngrok.io/chat)", current);
+  if (entered && entered.startsWith("http")) {
+    BACKEND_URL = entered.trim();
+    USE_API = true;
+    localStorage.setItem("friday_backend_url", BACKEND_URL);
+    localStorage.setItem("friday_use_api", JSON.stringify(USE_API));
+    alert("API connected. I'll use the backend for replies now.");
+  }
+}
+
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute("data-theme");
   const newTheme = currentTheme === "dark" ? "light" : "dark";
@@ -125,7 +147,12 @@ function toggleTheme() {
 }
 
 function toggleSidebar() {
-  sidebar.classList.toggle("collapsed");
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    sidebar.classList.toggle("open");
+  } else {
+    sidebar.classList.toggle("collapsed");
+  }
 }
 
 // Chat Management
@@ -151,6 +178,7 @@ function startNewChat() {
   saveChats();
   loadChat(chatId);
   showQuickActionBubbles();
+  renderFridayIntro();
   enableInput(false);
 }
 
@@ -174,6 +202,7 @@ function loadChat(chatId) {
   
   if (!chat.type) {
     showQuickActionBubbles();
+    renderFridayIntro();
     enableInput(false);
   } else if (chat.type === "personal" && !chat.subcategory) {
     showCategoryPanel();
@@ -191,21 +220,55 @@ function renderChatList() {
   chats.forEach(chat => {
     const chatItem = document.createElement("div");
     chatItem.className = "chat-item";
-    chatItem.onclick = () => loadChat(chat.id);
+    chatItem.onclick = (e) => {
+      // Don't load chat if clicking on actions
+      if (!e.target.closest('.chat-item-actions')) {
+        loadChat(chat.id);
+      }
+    };
     
-    const title = chat.category && chat.subcategory 
+    const title = chat.customTitle || (chat.category && chat.subcategory 
       ? `${chat.category} - ${chat.subcategory}`
       : chat.type === "general" 
         ? "General Chat"
-        : "New Chat";
+        : "New Chat");
     
     const preview = chat.messages.length > 0 
       ? chat.messages[chat.messages.length - 1].content.substring(0, 50) + "..."
       : "Start chatting...";
     
     chatItem.innerHTML = `
-      <div class="chat-item-title">${title}</div>
-      <div class="chat-item-preview">${preview}</div>
+      <div class="chat-item-content">
+        <div class="chat-item-title">${title}</div>
+        <div class="chat-item-preview">${preview}</div>
+      </div>
+      <div class="chat-item-actions">
+        <div class="chat-menu">
+          <button class="chat-action-btn" onclick="toggleChatMenu(event, '${chat.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="1"></circle>
+              <circle cx="12" cy="5" r="1"></circle>
+              <circle cx="12" cy="19" r="1"></circle>
+            </svg>
+          </button>
+          <div class="chat-menu-dropdown" id="menu-${chat.id}">
+            <div class="chat-menu-item" onclick="renameChat('${chat.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Rename
+            </div>
+            <div class="chat-menu-item delete" onclick="deleteChat('${chat.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"></polyline>
+                <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+              </svg>
+              Delete
+            </div>
+          </div>
+        </div>
+      </div>
     `;
     
     chatList.appendChild(chatItem);
@@ -233,6 +296,10 @@ function showQuickActionBubbles() {
     </button>
   `;
   quickActions.style.display = "flex";
+  // trigger stagger animation
+  requestAnimationFrame(() => {
+    quickActions.classList.add('show');
+  });
 }
 
 function selectChatType(type) {
@@ -247,6 +314,20 @@ function selectChatType(type) {
   if (type === "general") {
     enableInput(true);
     chatTitle.textContent = "General Finance Chat";
+
+    // Auto-greeting from FRIDAY for General queries (only once per chat)
+    const alreadyGreeted = chat.messages.some(m => m.role === "assistant" && m.content.startsWith("Hi, I'm FRIDAY"));
+    if (!alreadyGreeted) {
+      const greet = {
+        role: "assistant",
+        content: "Hi, I'm FRIDAY. Ask me anything about money — budgeting, investing, loans, insurance or taxes. What would you like to know?",
+        ts: Date.now()
+      };
+      chat.messages.push(greet);
+      renderMessage("bot", greet.content, new Date(greet.ts));
+      saveChats();
+      scrollToBottom();
+    }
   } else {
     showCategoryPanel();
     chatTitle.textContent = "Personal Finance Setup";
@@ -403,6 +484,7 @@ function handleSend() {
 
 async function getAssistantReply(chat, userText) {
   typingIndicator.style.display = "flex";
+  typingIndicator.classList.add('show');
   scrollToBottom();
   
   const payload = {
@@ -453,6 +535,7 @@ async function getAssistantReply(chat, userText) {
     }
   }
   
+  typingIndicator.classList.remove('show');
   typingIndicator.style.display = "none";
   
   const assistantMsg = {
@@ -509,22 +592,110 @@ function enableInput(enabled) {
 
 function showWelcomeMessage() {
   chatTitle.textContent = "Welcome to Friday";
-  messagesContainer.innerHTML = `
-    <div class="welcome-message">
-      <div class="bot-avatar">🤖</div>
-      <div class="welcome-text">
-        <h3>Hi! I'm Friday, your personal finance advisor.</h3>
-        <p>I can help you with budgeting, investments, loans, insurance, taxes, and financial goals.</p>
-        <p>Start a new chat to get personalized advice!</p>
-      </div>
-    </div>
-  `;
+  renderFridayIntro();
   enableInput(false);
 }
 
 function scrollToBottom() {
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  smoothScrollToBottom();
 }
+
+// Friday Intro helper
+function renderFridayIntro() {
+  messagesContainer.innerHTML = `
+    <div class="welcome-message">
+      <div class="bot-avatar">🤖</div>
+      <div class="welcome-text">
+        <h3>Welcome — I'm FRIDAY</h3>
+        <p><strong>FRIDAY</strong> stands for:</p>
+        <ul class="friday-acro">
+          <li><strong>F</strong>inancial</li>
+          <li><strong>R</strong>easoning</li>
+          <li><strong>I</strong>ntelligent</li>
+          <li><strong>D</strong>ecision</li>
+          <li><strong>A</strong>ssistant for</li>
+          <li><strong>Y</strong>ou</li>
+        </ul>
+        <p>I help you make confident money decisions — from budgets and goals to investing, loans, insurance and taxes. Start a new chat or choose an option below.</p>
+      </div>
+    </div>
+  `;
+}
+
+// Chat Menu Functions
+function toggleChatMenu(event, chatId) {
+  event.stopPropagation();
+  
+  // Close all other menus
+  document.querySelectorAll('.chat-menu-dropdown').forEach(menu => {
+    if (menu.id !== `menu-${chatId}`) {
+      menu.classList.remove('show');
+    }
+  });
+  
+  // Toggle current menu
+  const menu = document.getElementById(`menu-${chatId}`);
+  menu.classList.toggle('show');
+}
+
+function renameChat(chatId) {
+  const chat = chats.find(c => c.id === chatId);
+  if (!chat) return;
+  
+  const currentTitle = chat.category && chat.subcategory 
+    ? `${chat.category} - ${chat.subcategory}`
+    : chat.type === "general" 
+      ? "General Chat"
+      : "New Chat";
+  
+  const newTitle = prompt("Enter new chat title:", currentTitle);
+  if (newTitle && newTitle.trim() !== "" && newTitle !== currentTitle) {
+    // Store custom title
+    chat.customTitle = newTitle.trim();
+    saveChats();
+    renderChatList();
+  }
+  
+  // Close menu
+  document.querySelectorAll('.chat-menu-dropdown').forEach(menu => {
+    menu.classList.remove('show');
+  });
+}
+
+function deleteChat(chatId) {
+  if (confirm("Are you sure you want to delete this chat? This action cannot be undone.")) {
+    const chatIndex = chats.findIndex(c => c.id === chatId);
+    if (chatIndex !== -1) {
+      chats.splice(chatIndex, 1);
+      saveChats();
+      
+      // If we deleted the current chat, load the first available chat or show welcome
+      if (currentChatId === chatId) {
+        if (chats.length > 0) {
+          loadChat(chats[0].id);
+        } else {
+          showWelcomeMessage();
+        }
+      } else {
+        renderChatList();
+      }
+    }
+  }
+  
+  // Close menu
+  document.querySelectorAll('.chat-menu-dropdown').forEach(menu => {
+    menu.classList.remove('show');
+  });
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.chat-menu')) {
+    document.querySelectorAll('.chat-menu-dropdown').forEach(menu => {
+      menu.classList.remove('show');
+    });
+  }
+});
 
 // Mobile responsiveness
 window.addEventListener("resize", () => {
@@ -532,6 +703,21 @@ window.addEventListener("resize", () => {
     sidebar.classList.remove("open");
   }
 });
+
+// Show/hide scroll-to-bottom button and compact header on scroll
+messagesContainer.addEventListener('scroll', () => {
+  const nearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 60;
+  scrollBottomBtn.style.display = nearBottom ? 'none' : 'flex';
+  const header = document.querySelector('.chat-header');
+  if (messagesContainer.scrollTop > 20) header.classList.add('compact');
+  else header.classList.remove('compact');
+});
+
+if (scrollBottomBtn) {
+  scrollBottomBtn.addEventListener('click', () => {
+    smoothScrollToBottom();
+  });
+}
 
 // Update sidebar toggle for mobile
 if (window.innerWidth <= 768) {
