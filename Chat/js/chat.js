@@ -1,6 +1,21 @@
 // Global Configuration
+// Whether to send requests to your own backend service. If true and BACKEND_URL is set
+// the chat will post to your backend for responses. This remains here for
+// backwards‑compatibility with the original Friday chat workflow.
 let USE_API = JSON.parse(localStorage.getItem("friday_use_api") || "false");
+// URL of your own backend (for example an ngrok tunnel) which accepts a
+// POST request with a JSON payload { message, history, user_profile } and
+// returns an object with a `reply` property.
 let BACKEND_URL = localStorage.getItem("friday_backend_url") || "https://<ngrok_url>/chat";
+
+// Gemini API configuration
+// To quickly test Friday without running your own backend you can use
+// Google’s Gemini API directly. Store your API key and chosen model in
+// localStorage so they persist across sessions.
+let GEMINI_API_KEY = localStorage.getItem("friday_gemini_api_key") || "";
+// Default to the smaller, inexpensive model for quick prototyping. You can
+// change this via the connect API prompt or by editing this value.
+let GEMINI_MODEL  = localStorage.getItem("friday_gemini_model")  || "gemini-2.5-flash";
 
 // Global State
 let chats = JSON.parse(localStorage.getItem("friday_chats")) || [];
@@ -127,14 +142,47 @@ function loadTheme() {
 }
 
 function connectApiPrompt() {
-  const current = BACKEND_URL || "";
-  const entered = prompt("Enter your API endpoint URL (e.g., https://xxxx.ngrok.io/chat)", current);
-  if (entered && entered.startsWith("http")) {
-    BACKEND_URL = entered.trim();
+  // Prompt the user for either a backend URL or a Gemini API key. If the value
+  // starts with "http" it will be treated as a backend URL. Otherwise it is
+  // assumed to be a Gemini API key. When connecting to Gemini you may also
+  // optionally provide a model name. Using the Gemini API avoids the need
+  // to run your own backend and lets you get up and running quickly.
+  const currentBackend = BACKEND_URL || "";
+  const currentKey     = GEMINI_API_KEY || "";
+  const input = prompt(
+    "Enter your backend URL (e.g., https://xxxx.ngrok.io/chat) or paste your\n" +
+    "Gemini API key. If you provide a key, I'll talk directly to Google Gemini.",
+    currentBackend || currentKey
+  );
+  if (!input) return;
+  const trimmed = input.trim();
+  if (trimmed.startsWith("http")) {
+    // User provided a backend URL. Use that and disable Gemini.
+    BACKEND_URL = trimmed;
     USE_API = true;
+    GEMINI_API_KEY = "";
     localStorage.setItem("friday_backend_url", BACKEND_URL);
     localStorage.setItem("friday_use_api", JSON.stringify(USE_API));
-    alert("API connected. I'll use the backend for replies now.");
+    localStorage.removeItem("friday_gemini_api_key");
+    alert("Backend API connected. I'll send messages to your server for replies.");
+  } else {
+    // User provided a Gemini API key. Save it and optionally ask for model.
+    GEMINI_API_KEY = trimmed;
+    localStorage.setItem("friday_gemini_api_key", GEMINI_API_KEY);
+    // Ask for model. Prepopulate with existing or default.
+    const modelInput = prompt(
+      "Enter the Gemini model you want to use (e.g., gemini-2.5-flash, gemini-1.5-pro).\n" +
+      "Leave blank to keep the current model: " + GEMINI_MODEL,
+      GEMINI_MODEL
+    );
+    if (modelInput) {
+      GEMINI_MODEL = modelInput.trim();
+      localStorage.setItem("friday_gemini_model", GEMINI_MODEL);
+    }
+    // Turn off backend usage when using Gemini.
+    USE_API = false;
+    localStorage.setItem("friday_use_api", JSON.stringify(USE_API));
+    alert("Gemini API key saved. I'll use Google Gemini for replies now. Make sure your key has access to the specified model.");
   }
 }
 
@@ -494,8 +542,41 @@ async function getAssistantReply(chat, userText) {
   };
   
   let reply;
-  
-  if (USE_API && BACKEND_URL) {
+
+  // Priority: if we have a Gemini API key, call the Gemini API directly.
+  if (GEMINI_API_KEY) {
+    try {
+      // Build the contents array from the existing chat history. Gemini expects
+      // roles to be either "user" or "model". We map "assistant" to "model".
+      const contents = chat.messages.map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [ { text: m.content } ]
+      }));
+      // Add the latest user message at the end in case it hasn't been stored yet.
+      contents.push({ role: "user", parts: [ { text: userText } ] });
+      const body = { contents };
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+      const geminiResponse = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": GEMINI_API_KEY
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await geminiResponse.json();
+      // Extract the first candidate's text.
+      reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!reply) {
+        reply = "⚠️ No response from Gemini API.";
+      }
+    } catch (error) {
+      console.error("Gemini API Error:", error);
+      reply = "⚠️ Error contacting Gemini API. Please check your API key and model.";
+    }
+  }
+  // Secondary: Use custom backend if configured and no Gemini key.
+  else if (USE_API && BACKEND_URL) {
     try {
       const response = await fetch(BACKEND_URL, {
         method: "POST",
@@ -504,17 +585,18 @@ async function getAssistantReply(chat, userText) {
         },
         body: JSON.stringify(payload)
       });
-      
       const data = await response.json();
       reply = data.reply;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error("Backend API Error:", error);
       reply = "⚠️ Error contacting backend. Please try again.";
     }
-  } else {
+  }
+  // Fallback: built‑in demo responses. This covers cases where no API key or
+  // backend is configured. It keeps the UI functional for demo/testing.
+  else {
     // Demo stub responses
     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
-    
     if (chat.type === "personal") {
       const income = chat.intakeData.monthly_income || chat.intakeData.annual_income || "N/A";
       reply = `📊 **Personalized ${chat.category} advice for ${chat.subcategory}:**\n\n` +
@@ -522,7 +604,7 @@ async function getAssistantReply(chat, userText) {
               `• Income: ₹${income}\n` +
               `• Category: ${chat.category}\n` +
               `• Focus: ${chat.subcategory}\n\n` +
-              `Here's my recommendation: [This is a demo response. Connect your backend for real advice.]\n\n` +
+              `Here's my recommendation: [This is a demo response. Connect your backend or Gemini API for real advice.]\n\n` +
               `💡 *Disclaimer: This is a demo response for testing purposes.*`;
     } else {
       const responses = [
@@ -531,7 +613,7 @@ async function getAssistantReply(chat, userText) {
         "💰 Budgeting advice: Follow the 50-30-20 rule - 50% for needs, 30% for wants, and 20% for savings and investments.",
         "🏦 For loans, always compare interest rates from multiple lenders and read the fine print before signing any agreement."
       ];
-      reply = responses[Math.floor(Math.random() * responses.length)] + "\n\n💡 *This is a demo response. Connect your backend for personalized advice.*";
+      reply = responses[Math.floor(Math.random() * responses.length)] + "\n\n💡 *This is a demo response. Connect your backend or Gemini API for personalized advice.*";
     }
   }
   
